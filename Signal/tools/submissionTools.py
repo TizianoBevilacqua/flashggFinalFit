@@ -36,6 +36,30 @@ def writeCondorSub(_file,_exec,_queue,_nJobs,_jobOpts,doHoldOnFailure=True,doPer
   _file.write("+JobFlavour = \"%s\"\n"%_queue)
   _file.write("queue %g"%_nJobs)
 
+def writeSlurmSub(_file, _nProc, _mode, _ext):
+  _file.write("#!/bin/bash -e\n")
+  _file.write("for i in $(seq 0 %s); do\n" % _nProc)
+  _file.write("  sbatch  slurm_%s_%s.sh $i\n"%(_mode,_ext))
+  _file.write("done\n")
+
+def writeSlurmExec(_file,_jobdir,_queue,_wall,_mem):
+  _file.write("#!/bin/bash -e \n")
+  _file.write("#SBATCH --account=t3 \n")
+  _file.write("#SBATCH --partition=%s \n"%_queue)
+  _file.write("#SBATCH --cpus-per-task=1 \n")
+  _file.write("#SBATCH --mem=%s \n"%_mem)
+  _file.write("#SBATCH --time=%s \n"%_wall)
+  _file.write("#SBATCH --nodes=1 \n")
+  _file.write("#SBATCH -o %s/%%x-%%j.out \n" % _jobdir)
+  _file.write("#SBATCH -e %s/%%x-%%j.err \n"% _jobdir)
+
+  _file.write("cd %s/src\n"%os.environ['CMSSW_BASE'])
+  _file.write("export SCRAM_ARCH=%s\n"%os.environ['SCRAM_ARCH'])
+  _file.write("source /cvmfs/cms.cern.ch/cmsset_default.sh\n")
+  _file.write("eval `scramv1 runtime -sh`\n")
+  _file.write("cd %s\n"%swd__)
+  _file.write("export PYTHONPATH=$PYTHONPATH:%s/tools:%s/tools\n\n"%(cwd__,swd__))
+
 # ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 def writeSubFiles(_opts):
   # Make directory to store sub files
@@ -109,7 +133,72 @@ def writeSubFiles(_opts):
       if( not _opts['groupSignalFitJobsByCat'] ): writeCondorSub(_fsub,_executable,_opts['queue'],_opts['nCats']*_opts['nProcs'],_opts['jobOpts'])
       else: writeCondorSub(_fsub,_executable,_opts['queue'],_opts['nCats'],_opts['jobOpts'])
     elif( _opts['mode'] == "calcPhotonSyst" )|( _opts['mode'] == "fTest" )|( _opts['mode'] == "packageSignal" ): writeCondorSub(_fsub,_executable,_opts['queue'],_opts['nCats'],_opts['jobOpts'])
+  # SLURM
+  if _opts['batch'] == "slurm":
+    _executable = "slurm_%s_%s"%(_opts['mode'],_opts['ext'])
+    _f = open("%s/%s.sh"%(_jobdir,_executable),"w") # single .sh script split into separate jobs
+    writeSlurmExec(_f, _jobdir, _opts['queue'], _opts['wall'], _opts['mem'])
+
+    # Write details depending on mode
+
+    # For looping over proc x cat
+    if( _opts['mode'] == "signalFit" )&( not _opts['groupSignalFitJobsByCat'] ):
+      for pidx in range(_opts['nProcs']):
+        for cidx in range(_opts['nCats']):
+          pcidx = pidx*_opts['nCats']+cidx
+          p,c = _opts['procs'].split(",")[pidx], _opts['cats'].split(",")[cidx]
+          _f.write("if [ $1 -eq %g ]; then\n"%pcidx)
+          _f.write("  python3 %s/scripts/signalFit.py --inputWSDir %s --ext %s --proc %s --cat %s --year %s --analysis %s --massPoints %s --scales \'%s\' --scalesCorr \'%s\' --scalesGlobal \'%s\' --smears \'%s\' %s\n"%(swd__,_opts['inputWSDir'],_opts['ext'],p,c,_opts['year'],_opts['analysis'],_opts['massPoints'],_opts['scales'],_opts['scalesCorr'],_opts['scalesGlobal'],_opts['smears'],_opts['modeOpts']))
+          _f.write("fi\n")
+   
+    # For looping over categories
+    elif( _opts['mode'] == "signalFit" )&( _opts['groupSignalFitJobsByCat'] ):
+      for cidx in range(_opts['nCats']):
+        c = _opts['cats'].split(",")[cidx]
+        _f.write("if [ $1 -eq %g ]; then\n"%cidx)
+        for pidx in range(_opts['nProcs']):
+          p = _opts['procs'].split(",")[pidx]
+          _f.write("  python3 %s/scripts/signalFit.py --inputWSDir %s --ext %s --proc %s --cat %s --year %s --analysis %s --massPoints %s --scales \'%s\' --scalesCorr \'%s\' --scalesGlobal \'%s\' --smears \'%s\' %s\n"%(swd__,_opts['inputWSDir'],_opts['ext'],p,c,_opts['year'],_opts['analysis'],_opts['massPoints'],_opts['scales'],_opts['scalesCorr'],_opts['scalesGlobal'],_opts['smears'],_opts['modeOpts']))
+        _f.write("fi\n")
+
+    elif _opts['mode'] == "calcPhotonSyst":
+      for cidx in range(_opts['nCats']):
+        c = _opts['cats'].split(",")[cidx]
+        _f.write("if [ $1 -eq %g ]; then\n"%cidx)
+        _f.write("  python3 %s/scripts/calcPhotonSyst.py --cat %s --procs %s --ext %s --inputWSDir %s --scales \'%s\' --scalesCorr \'%s\' --scalesGlobal \'%s\' --smears \'%s\' %s\n"%(swd__,c,_opts['procs'],_opts['ext'],_opts['inputWSDir'],_opts['scales'],_opts['scalesCorr'],_opts['scalesGlobal'],_opts['smears'],_opts['modeOpts']))
+        _f.write("fi\n")
+
+    elif _opts['mode'] == "fTest":
+      for cidx in range(_opts['nCats']):
+        c = _opts['cats'].split(",")[cidx]
+        _f.write("if [ $1 -eq %g ]; then\n"%cidx)
+        _f.write("  python3 %s/scripts/fTest.py --cat %s --procs %s --ext %s --inputWSDir %s %s\n"%(swd__,c,_opts['procs'],_opts['ext'],_opts['inputWSDir'],_opts['modeOpts']))
+        _f.write("fi\n")
+
+    elif _opts['mode'] == "packageSignal":
+      for cidx in range(_opts['nCats']):
+        c = _opts['cats'].split(",")[cidx]
+        _f.write("if [ $1 -eq %g ]; then\n"%cidx)
+        _f.write("  python3 %s/scripts/packageSignal.py --cat %s --outputExt %s --massPoints %s %s\n"%(swd__,c,_opts['ext'],_opts['massPoints'],_opts['modeOpts']))
+        _f.write("fi\n")
+
+    # For single script
+    elif _opts['mode'] == 'getDiagProc':
+      _f.write("python3 %s/scripts/getDiagProc.py --inputWSDir %s --ext %s %s\n"%(swd__,_opts['inputWSDir'],_opts['ext'],_opts['modeOpts']))
+      
+    # Close .sh file
+    _f.close()
+    os.system("chmod 775 %s/%s.sh"%(_jobdir,_executable))
+
+    # slurm submission file
+    _fsub = open("%s/%s_sub.sh"%(_jobdir,_executable),"w")
+    if _opts['mode'] == "signalFit": 
+      if( not _opts['groupSignalFitJobsByCat'] ): writeSlurmSub(_fsub,_opts['nCats']*_opts['nProcs'], _opts['mode'], _opts['ext'])
+      else: writeSlurmSub(_fsub,_opts['nCats'], _opts['mode'], _opts['ext'])
+    elif( _opts['mode'] == "calcPhotonSyst" )|( _opts['mode'] == "fTest" )|( _opts['mode'] == "packageSignal" ): writeSlurmSub(_fsub,_opts['nCats'], _opts['mode'], _opts['ext'])
+    elif( _opts['mode'] == "getEffAcc" )|( _opts['mode'] == "getDiagProc" ): writeSlurmSub(_fsub,1, _opts['mode'], _opts['ext'])
     _fsub.close()
+    os.system("chmod 775 %s/%s_sub.sh"%(_jobdir,_executable))
     
   # SGE...
   if (_opts['batch'] == "IC")|(_opts['batch'] == "SGE")|(_opts['batch'] == "local" ):
@@ -190,6 +279,12 @@ def submitFiles(_opts):
       cmdLine = "cd %s; condor_submit %s.sub; cd %s"%(_jobdir,_executable,swd__)
     run(cmdLine)
     print("  --> Finished submitting files")
+  # SLURM
+  if _opts['batch'] == "slurm":
+    _executable = "slurm_%s_%s"%(_opts['mode'],_opts['ext'])
+    cmdLine = "cd %s; ls -l; sh %s_sub.sh; cd %s"%(_jobdir,_executable,swd__)
+    run(cmdLine)
+    print ("  --> Finished submitting files")
 
   # SGE
   elif _opts['batch'] in ['IC','SGE']:

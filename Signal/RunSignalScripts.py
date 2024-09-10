@@ -52,6 +52,8 @@ if opt.inputConfig != '':
     options['smears']       = _cfg['smears']
     options['batch']        = _cfg['batch']
     options['queue']        = _cfg['queue']
+    options['mem']          = _cfg['mem']
+    options['wall']         = _cfg['wall']
     # Options from command line
     options['mode']                    = opt.mode
     options['modeOpts']                = opt.modeOpts

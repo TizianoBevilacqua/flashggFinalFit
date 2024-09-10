@@ -36,6 +36,40 @@ globalXSBRMap['tutorial']['decay'] = {'mode':'hgg'}
 globalXSBRMap['tutorial']['GG2H'] = {'mode':'constant', 'factor':51.96}
 globalXSBRMap['tutorial']['VBF'] = {'mode':'constant', 'factor':4.067}
 
+# HPC 2p0 analysis
+globalXSBRMap['hpc_gen'] = od()
+globalXSBRMap['hpc_gen']['decay'] = {'mode':'hgg'}
+globalXSBRMap['hpc_gen']['GG2H_c'] = {'mode':'constant','factor':48.58}
+globalXSBRMap['hpc_gen']['GG2H_b'] = {'mode':'constant','factor':48.58}
+globalXSBRMap['hpc_gen']['GG2H_l'] = {'mode':'constant','factor':48.58}
+globalXSBRMap['hpc_gen']['ggh_c'] = {'mode':'constant','factor':48.58}
+globalXSBRMap['hpc_gen']['ggh_b'] = {'mode':'constant','factor':48.58}
+globalXSBRMap['hpc_gen']['ggh_l'] = {'mode':'constant','factor':48.58}
+globalXSBRMap['hpc_gen']['TTH_c'] = {'mode':'constant','factor':0.51}
+globalXSBRMap['hpc_gen']['TTH_b'] = {'mode':'constant','factor':0.51}
+globalXSBRMap['hpc_gen']['TTH_l'] = {'mode':'constant','factor':0.51}
+globalXSBRMap['hpc_gen']['tth_c'] = {'mode':'constant','factor':0.51}
+globalXSBRMap['hpc_gen']['tth_b'] = {'mode':'constant','factor':0.51}
+globalXSBRMap['hpc_gen']['tth_l'] = {'mode':'constant','factor':0.51}
+globalXSBRMap['hpc_gen']['VBF_c'] = {'mode':'constant','factor':3.78}
+globalXSBRMap['hpc_gen']['VBF_b'] = {'mode':'constant','factor':3.78}
+globalXSBRMap['hpc_gen']['VBF_l'] = {'mode':'constant','factor':3.78}
+globalXSBRMap['hpc_gen']['vbf_c'] = {'mode':'constant','factor':3.78}
+globalXSBRMap['hpc_gen']['vbf_b'] = {'mode':'constant','factor':3.78}
+globalXSBRMap['hpc_gen']['vbf_l'] = {'mode':'constant','factor':3.78}
+globalXSBRMap['hpc_gen']['VH_c'] = {'mode':'constant','factor':2.2555}
+globalXSBRMap['hpc_gen']['VH_b'] = {'mode':'constant','factor':2.2555}
+globalXSBRMap['hpc_gen']['VH_l'] = {'mode':'constant','factor':2.2555}
+globalXSBRMap['hpc_gen']['vh_c'] = {'mode':'constant','factor':2.2555}
+globalXSBRMap['hpc_gen']['vh_b'] = {'mode':'constant','factor':2.2555}
+globalXSBRMap['hpc_gen']['vh_l'] = {'mode':'constant','factor':2.2555}
+globalXSBRMap['hpc_gen']['ch_c'] = {'mode':'constant','factor':0.09013}
+globalXSBRMap['hpc_gen']['ch_b'] = {'mode':'constant','factor':0.09013}
+globalXSBRMap['hpc_gen']['ch_l'] = {'mode':'constant','factor':0.09013}
+globalXSBRMap['hpc_gen']['bh_c'] = {'mode':'constant','factor':0.6654}
+globalXSBRMap['hpc_gen']['bh_b'] = {'mode':'constant','factor':0.6654}
+globalXSBRMap['hpc_gen']['bh_l'] = {'mode':'constant','factor':0.6654}
+
 # STXS analysis: add factor for bin composition
 globalXSBRMap['STXS'] = od()
 globalXSBRMap['STXS']['decay'] = {'mode':'hgg'}

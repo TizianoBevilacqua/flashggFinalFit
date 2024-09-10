@@ -72,13 +72,13 @@ for proc in opt.procs.split(","):
   WSFileName = glob.glob("%s/output*M%s*%s.root"%(opt.inputWSDir,opt.mass,proc))[0]
   f = ROOT.TFile(WSFileName,"read")
   inputWS = f.Get(inputWSName__)
-  d = reduceDataset(inputWS.data("%s_%s_%s_%s"%(procToData(proc.split("_")[0]),opt.mass,sqrts__,opt.cat)),aset)
+  d = reduceDataset(inputWS.data("%s_%s_%s_%s"%(procToData(proc),opt.mass,sqrts__,opt.cat)),aset)
   df.loc[len(df)] = [proc,d.sumEntries(),1,1]
   inputWS.Delete()
   f.Close()
 
 # Extract processes to perform fTest (i.e. first nProcsToFTest):
-if( opt.nProcsToFTest == -1)|( opt.nProcsToFTest > len(opt.procs.split(",")) ): procsToFTest = opt.procs.split(",")
+if( opt.nProcsToFTest == -1)|( opt.nProcsToFTest < len(opt.procs.split(",")) ): procsToFTest = opt.procs.split(",")
 else: procsToFTest = list(df.sort_values('sumEntries',ascending=False)[0:opt.nProcsToFTest].proc.values)
 for pidx, proc in enumerate(procsToFTest): 
 
@@ -89,7 +89,7 @@ for pidx, proc in enumerate(procsToFTest):
   WSFileName = glob.glob("%s/output*M%s*%s.root"%(opt.inputWSDir,opt.mass,proc))[0]
   f = ROOT.TFile(WSFileName,"read")
   inputWS = f.Get(inputWSName__)
-  d = reduceDataset(inputWS.data("%s_%s_%s_%s"%(procToData(proc.split("_")[0]),opt.mass,sqrts__,opt.cat)),aset)
+  d = reduceDataset(inputWS.data("%s_%s_%s_%s"%(procToData(proc),opt.mass,sqrts__,opt.cat)),aset)
   datasets_RV[opt.mass] = splitRVWV(d,aset,mode="RV")
   datasets_WV[opt.mass] = splitRVWV(d,aset,mode="WV")
 

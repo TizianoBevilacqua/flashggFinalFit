@@ -57,6 +57,40 @@ globalReplacementMap["tutorial"]["catRVMap"]["EEEB_highR9lowR9"] = "EEEB_highR9l
 globalReplacementMap["tutorial"]["catRVMap"]["EEEB_lowR9highR9"] = "EEEB_lowR9highR9"
 globalReplacementMap["tutorial"]["catRVMap"]["EEEE_incl"] = "EEEE_incl"
 
+# HPC 2p0 analysis
+globalReplacementMap['hpc_gen'] = od()
+# For WRONG VERTEX SCENARIO:
+#  * single proc x cat for wrong vertex since for dZ > 1cm shape independent of proc x cat
+#  * use proc x cat with highest number of WV events
+globalReplacementMap['hpc_gen']['procWV'] = "ggh_l"
+globalReplacementMap['hpc_gen']['catWV'] = "lcTag_high"
+# For RIGHT VERTEX SCENARIO:
+#  * default you should add is diagonal process from given category 
+#  * if few events in diagonal process then may need to change the category aswell (see catRVMap)
+#  * map must contain entry for all cats being processed (for replacement proc and cat)
+globalReplacementMap['hpc_gen']['procRVMap'] = od()
+
+globalReplacementMap["hpc_gen"]["procRVMap"]["cTag_high"] = "ch_c"
+globalReplacementMap["hpc_gen"]["procRVMap"]["bTag_high"] = "bh_c"
+globalReplacementMap["hpc_gen"]["procRVMap"]["lbTag_high"] = "ggh_l"
+globalReplacementMap["hpc_gen"]["procRVMap"]["lcTag_high"] = "ggh_l"
+globalReplacementMap["hpc_gen"]["procRVMap"]["cTag_low"] = "ch_c"
+globalReplacementMap["hpc_gen"]["procRVMap"]["bTag_low"] = "bh_c"
+globalReplacementMap["hpc_gen"]["procRVMap"]["lbTag_low"] = "tth_b"
+globalReplacementMap["hpc_gen"]["procRVMap"]["lcTag_low"] = "ggh_l"
+
+# Replacement category for RV fit
+globalReplacementMap["hpc_gen"]["catRVMap"] = od()
+globalReplacementMap["hpc_gen"]["catRVMap"]["UNTAGGED"] = "UNTAGGED"
+
+globalReplacementMap["hpc_gen"]["catRVMap"]["cTag_high"] = "cTag_high"
+globalReplacementMap["hpc_gen"]["catRVMap"]["bTag_high"] = "bTag_high"
+globalReplacementMap["hpc_gen"]["catRVMap"]["lcTag_high"] = "lcTag_high"
+globalReplacementMap["hpc_gen"]["catRVMap"]["lbTag_high"] = "lbTag_high"
+globalReplacementMap["hpc_gen"]["catRVMap"]["cTag_low"] = "cTag_low"
+globalReplacementMap["hpc_gen"]["catRVMap"]["bTag_low"] = "bTag_low"
+globalReplacementMap["hpc_gen"]["catRVMap"]["lcTag_low"] = "lcTag_low"
+globalReplacementMap["hpc_gen"]["catRVMap"]["lbTag_low"] = "lbTag_low"
 
 # STXS analysis
 globalReplacementMap['STXS'] = od()

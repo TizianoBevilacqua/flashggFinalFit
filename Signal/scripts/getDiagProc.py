@@ -51,7 +51,7 @@ for proc in allProcs.split(","):
   # Loop over cats: up
   for cat in allCats.split(","):
     # Extract sum of weights
-    nominalDataName = "%s_%s_%s_%s"%(procToData(proc.split("_")[0]),opt.MH,sqrts__,cat)
+    nominalDataName = "%s_%s_%s_%s"%(procToData(proc),opt.MH,sqrts__,cat)
     nominalData = inputWS.data(nominalDataName)
     sumw = nominalData.sumEntries()
     # Update dict if largest
