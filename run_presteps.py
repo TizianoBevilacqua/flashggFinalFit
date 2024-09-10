@@ -59,11 +59,17 @@ def EXE(cmd, suspend=True, verbose=False, dry_run=False):
     return _exitcode
 
 def is_job_finished(prev_step):
-    submit_command = f'squeue -o "%.10i %.9P %.48j %.8u %.8T %.10M %.9l %.6D %R" -u bevila_t | grep {prev_step} | wc -l'
+    submit_command = f'squeue -o "%.10i %.9P %.48j %.8u %.8T %.10M %.9l %.6D %R" -u $USER | grep {prev_step} | wc -l'
     result = subprocess.run(submit_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
     output = result.stdout.strip()
 
     return output == "0"
+
+def run_command(run_command):
+    result = subprocess.run(run_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE, universal_newlines=True)
+    output = result.stdout.strip()
+
+    return output
 
 #--------------------------------------------------------------------------------------------------------------------------#
 #- USAGE: -----------------------------------------------------------------------------------------------------------------#
@@ -113,7 +119,8 @@ if opt.signal:
         if _cfg["batch"] == "slurm":
             # Wait for the job to finish
             while not is_job_finished("fTest"):
-                print(f"fTest Jobs are still running...")
+                num_jobs = run_command('squeue -o "%.10i %.9P %.48j %.8u %.8T %.10M %.9l %.6D %R" -u $USER | grep fTest | wc -l')
+                print(f"{num_jobs} fTest Jobs are still running...")
                 time.sleep(30) 
             print(f"fTest Jobs are finished, continuing with systematics")
         os.system(f"python3 RunSignalScripts.py --inputConfig {opt.sconfig} --mode calcPhotonSyst")
@@ -122,7 +129,8 @@ if opt.signal:
         if _cfg["batch"] == "slurm":
             # Wait for the job to finish
             while not is_job_finished("Syst"):
-                print(f"Syst Jobs are still running...")
+                num_jobs = run_command('squeue -o "%.10i %.9P %.48j %.8u %.8T %.10M %.9l %.6D %R" -u $USER | grep Syst | wc -l')
+                print(f"{numJobs} syst Jobs are still running...")
                 time.sleep(30) 
             print(f"Systematics Jobs are finished, continuing with fit")
         if opt.doEffAccFromJson: 
@@ -140,10 +148,10 @@ if opt.signal:
         if _cfg["batch"] == "slurm":
             # Wait for the job to finish
             while not is_job_finished("signalFit"):
-                print(f"Fit Jobs are still running...")
+                print(f"Fit jobs are still running...")
                 time.sleep(30) 
-            print(f"Fit Jobs are finished, continuing with fit")
-        os.system(f"python3 RunPackager.py --cats {_cfg['cats']} --inputWSDir {_cfg['input']} --ext {_cfg['ext']} --batch local --massPoints {_cfg['massPoints']} --year {_cfg['year']}")
+            print(f"Fit jobs are finished, continuing with packaging")
+        os.system(f"python3 RunPackager.py --cats {_cfg['cats']} --inputWSDir {_cfg['inputWSDir']} --ext {_cfg['ext']} --batch local --massPoints {_cfg['massPoints']} --year {_cfg['year']}")
     os.chdir("..")
     print("Signal steps done.")
     print("-"*120)
